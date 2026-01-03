@@ -1,0 +1,357 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dayflow HRMS</title>
+
+<style>
+/* --- CSS STYLES --- */
+:root {
+--primary: #4F46E5; /* Indigo */
+--primary-hover: #4338ca;
+--bg-color: #f3f4f6;
+--card-bg: #ffffff;
+--text-main: #111827;
+--text-muted: #6b7280;
+--success: #10b981;
+--warning: #f59e0b;
+--danger: #ef4444;
+}
+* { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; }
+/* UTILITIES */
+.hidden { display: none !important; }
+.btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; }
+.btn-primary { background-color: var(--primary); color: white; }
+.btn-primary:hover { background-color: var(--primary-hover); }
+.btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+.card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
+/* INPUTS */
+input, select, textarea { width: 100%; padding: 10px; margin: 8px 0 16px; border: 1px solid #d1d5db; border-radius: 6px; }
+label { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
+/* --- LOGIN SCREEN --- */
+#auth-screen { display: flex; justify-content: center; align-items: center; height: 100vh; }
+.auth-box { width: 400px; text-align: center; }
+.logo { font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
+/* --- DASHBOARD LAYOUT --- */
+#main-app { display: flex; height: 100vh; overflow: hidden; }
+/* Sidebar */
+.sidebar { width: 250px; background: white; border-right: 1px solid #e5e7eb; padding: 20px; display: flex; flex-direction: column; }
+.nav-item { padding: 12px; margin-bottom: 5px; cursor: pointer; border-radius: 8px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; }
+.nav-item:hover, .nav-item.active { background-color: #e0e7ff; color: var(--primary); }
+.logout-btn { margin-top: auto; color: var(--danger); }
+/* Main Content Area */
+.content-area { flex: 1; padding: 30px; overflow-y: auto; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.page-title { font-size: 1.8rem; font-weight: bold; }
+/* DASHBOARD WIDGETS */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.stat-card { text-align: center; padding: 30px; cursor: pointer; transition: transform 0.2s; }
+.stat-card:hover { transform: translateY(-5px); }
+.icon-circle { width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+/* TABLES */
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+th { background-color: #f9fafb; font-weight: 600; color: var(--text-muted); }
+.status { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+.status-Present, .status-Approved { background: #d1fae5; color: #065f46; }
+.status-Absent, .status-Rejected { background: #fee2e2; color: #991b1b; }
+.status-Pending { background: #fef3c7; color: #92400e; }
+</style>
+</head>
+<body>
+<div id="auth-screen">
+<div class="card auth-box">
+<div class="logo">Dayflow</div>
+<p style="margin-bottom: 20px; color: rgb(102, 102, 102);">Human
+Resource Management System</p>
+<form id="login-form" onsubmit="handleLogin(event)">
+<div style="text-align: left;"><label>Email Address</label>
+<input id="email" placeholder="admin@dayflow.com" required="" type="email"><label>Password</label>
+<input id="password" placeholder="******" required="" type="password"></div>
+<button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+<p style="margin-top: 15px;">Don't have an account? <a href="#" style="">Sign Up</a>
+</p>
+</form>
+</div>
+</div>
+<div id="main-app" class="hidden">
+<div class="sidebar">
+<div class="logo" style="">Dayflow</div>
+<br>
+<div class="nav-item active" onclick="navigate('dashboard')">Dashboard</div>
+<div class="nav-item" onclick="navigate('profile')">My
+Profile</div>
+<div class="nav-item" onclick="navigate('attendance')">Attendance</div>
+<div class="nav-item" onclick="navigate('leave')">Leave
+Requests</div>
+<div class="nav-item logout-btn" onclick="handleLogout()">Logout</div>
+</div>
+<div class="content-area">
+<div id="view-dashboard">
+<div class="header">
+<h1 class="page-title">Dashboard</h1>
+<div>Welcome, <b id="user-name-display">Employee</b></div>
+</div>
+<div class="stats-grid">
+<div class="card stat-card" onclick="navigate('profile')">
+<div class="icon-circle" style="background: rgb(239, 246, 255) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial; color: rgb(37, 99, 235);">👤</div>
+<h3>My Profile</h3>
+<p style="color: rgb(102, 102, 102);">View personal details</p>
+</div>
+<div class="card stat-card" onclick="navigate('attendance')">
+<div class="icon-circle" style="background: rgb(240, 253, 244) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial; color: rgb(22, 163, 74);">📅</div>
+<h3>Attendance</h3>
+<p style="color: rgb(102, 102, 102);">Check In / Check Out</p>
+</div>
+<div class="card stat-card" onclick="navigate('leave')">
+<div class="icon-circle" style="background: rgb(250, 245, 255) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial; color: rgb(147, 51, 234);">📝</div>
+<h3>Leave Requests</h3>
+<p style="color: rgb(102, 102, 102);">Apply for time off</p>
+</div>
+</div>
+<div class="card" style="margin-top: 20px;">
+<h3>Recent Announcements</h3>
+<p style="color: rgb(102, 102, 102); margin-top: 10px;">•
+The office will be closed for maintenance this Saturday.</p>
+<p style="color: rgb(102, 102, 102); margin-top: 5px;">•
+Please update your emergency contact details in the Profile section.</p>
+</div>
+</div>
+<div id="view-profile" class="hidden">
+<div class="header">
+<h1 class="page-title">My Profile</h1>
+</div>
+<div class="card">
+<div style="">
+<div style="background: rgb(221, 221, 221) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial; width: 100px; height: 100px;"></div>
+<div style="">
+<div style="">
+<div><label>Full Name</label>
+<input value="John Doe" disabled="disabled" type="text"></div>
+<div>
+<label>Role</label>
+<input value="Software Engineer" disabled="disabled" type="text"></div>
+<div>
+<label>Email</label>
+<input value="john@dayflow.com" disabled="disabled" type="email"></div>
+<div>
+<label>Phone</label>
+<input value="+1 234 567 890" type="text"></div>
+<div style="">
+<label>Address</label>
+<input value="123 Tech Street, Silicon Valley" type="text"></div>
+</div>
+<button class="btn btn-primary" onclick="alert('Profile Updated!')">Save Changes</button>
+</div>
+</div>
+</div>
+</div>
+<div id="view-attendance" class="hidden">
+<div class="header">
+<h1 class="page-title">Attendance</h1>
+</div>
+<div class="card" style="">
+<div>
+<h3>Today's Status</h3>
+<p id="clock-display" style="">--:--:--</p>
+</div>
+<div>
+<button class="btn btn-primary" onclick="markAttendance('Check In')">Check In</button>
+<button class="btn btn-outline" onclick="markAttendance('Check Out')">Check Out</button>
+</div>
+</div>
+<div class="card">
+<h3>Weekly Logs</h3>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Check In</th>
+<th>Check Out</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="attendance-table">
+</tbody>
+</table>
+</div>
+</div>
+<div id="view-leave" class="hidden">
+<div class="header">
+<h1 class="page-title">Leave Management</h1>
+</div>
+<div class="card">
+<h3>Apply for Leave</h3>
+<form onsubmit="handleLeaveSubmit(event)">
+<div style="">
+<div><label>Leave Type</label>
+<select required="" id="leave-type"><option value="Paid">Paid Time Off</option><option value="Sick">Sick Leave</option><option value="Unpaid">Unpaid Leave</option></select>
+</div>
+<div>
+<label>Reason</label>
+<input placeholder="Short description" required="" id="leave-reason" type="text"></div>
+<div>
+<label>Start Date</label>
+<input required="" id="leave-start" type="date"></div>
+<div>
+<label>End Date</label>
+<input required="" id="leave-end" type="date"></div>
+</div>
+<button type="submit" class="btn btn-primary">Submit
+Request</button>
+</form>
+</div>
+<div class="card">
+<h3>My Leave History</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Dates</th>
+<th>Reason</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="leave-table">
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<script>
+// --- CONFIGURATION ---
+// PASTE YOUR REPLIT URL HERE (Ensure no trailing slash)
+const API_URL = "https://nodejs--guptadwij8.replit.app"; // --- STATE ---
+let currentUser = null;
+// --- 1. AUTHENTICATION ---
+async function handleLogin(e) {
+e.preventDefault();
+const email = document.getElementById('email').value;
+const password = document.getElementById('password').value;
+const btn = e.target.querySelector('button');
+btn.innerText = "Loading...";
+try {
+const res = await fetch(`${API_URL}/api/login`, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ email, password })
+});
+const data = await res.json();
+if (res.ok) {
+currentUser = data.user;
+document.getElementById('user-name-display').innerText = currentUser.full_name;
+// Switch Screens
+document.getElementById('auth-screen').classList.add('hidden');
+document.getElementById('main-app').classList.remove('hidden');
+navigate('dashboard');
+// Load Initial Data
+loadProfile();
+loadAttendance();
+loadLeaves();
+} else {
+alert(data.error);
+}
+} catch (err) {
+alert("Could not connect to server. Is the backend running?");
+console.error(err);
+}
+btn.innerText = "Sign In";
+}
+function handleLogout() {
+if(confirm('Are you sure you want to logout?')) {
+currentUser = null;
+location.reload(); }
+}
+// --- NAVIGATION ---
+function navigate(viewName) {
+const views = ['dashboard', 'profile', 'attendance', 'leave'];
+views.forEach(v => document.getElementById(`view-${v}`).classList.add('hidden'));
+document.getElementById(`view-${viewName}`).classList.remove('hidden');
+// Refresh data when entering a tab
+if(viewName === 'attendance') loadAttendance();
+if(viewName === 'leave') loadLeaves();
+}
+// --- 2. PROFILE ---
+async function loadProfile() {
+const res = await fetch(`${API_URL}/api/profile?email=${currentUser.email}`);
+const profile = await res.json();
+// Here we would populate the inputs, simplified for now
+// Note: You would add ID tags to your profile inputs to populate them accurately
+}
+// --- 3. ATTENDANCE ---
+async function loadAttendance() {
+const res = await fetch(`${API_URL}/api/attendance?email=${currentUser.email}`);
+const logs = await res.json();
+const tbody = document.getElementById('attendance-table');
+tbody.innerHTML = '';
+logs.forEach(row => {
+tbody.innerHTML += `
+<tr>
+<td>${row.date}</td>
+<td>${row.check_in || '-'}</td>
+<td>${row.check_out || '-'}</td>
+<td><span class="status status-${row.status}">${row.status}</span></td>
+</tr>
+`;
+});
+}
+async function markAttendance(type) {
+const now = new Date();
+const timeString = now.toLocaleTimeString();
+const dateString = now.toISOString().split('T')[0];
+const res = await fetch(`${API_URL}/api/attendance`, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ email: currentUser.email, type: type, time: timeString, date: dateString })
+});
+if (res.ok) {
+alert(`${type} Successful!`);
+loadAttendance();
+} else {
+alert('Error marking attendance');
+}
+}
+// --- 4. LEAVES ---
+async function loadLeaves() {
+const res = await fetch(`${API_URL}/api/leaves?email=${currentUser.email}`);
+const leaves = await res.json();
+const tbody = document.getElementById('leave-table');
+tbody.innerHTML = '';
+leaves.forEach(row => {
+tbody.innerHTML += `
+<tr>
+<td>${row.type}</td>
+<td>${row.start_date} to ${row.end_date}</td>
+<td>${row.reason}</td>
+<td><span class="status status-${row.status}">${row.status}</span></td>
+</tr>
+`;
+});
+}
+async function handleLeaveSubmit(e) {
+e.preventDefault();
+const type = document.getElementById('leave-type').value;
+const start = document.getElementById('leave-start').value;
+const end = document.getElementById('leave-end').value;
+const reason = document.getElementById('leave-reason').value;
+const res = await fetch(`${API_URL}/api/leaves`, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ email: currentUser.email, type, start, end, reason })
+});
+if (res.ok) {
+alert('Leave Request Submitted');
+loadLeaves();
+document.getElementById('leave-reason').value = '';
+} else {
+alert('Error submitting leave');
+}
+}
+// --- CLOCK ---
+setInterval(() => {
+const clock = document.getElementById('clock-display');
+if(clock) clock.innerText = new Date().toLocaleTimeString();
+}, 1000);
+</script>
+</body></html>
