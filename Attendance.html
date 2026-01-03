@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+  <meta charset="UTF-8">
+  <title>Attendance</title>
+
+
+
+  <style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #0b0b0b;
+        color: white;
+    }
+
+    /* TOP BAR */
+    .topbar {
+        display: flex;
+        align-items: center;
+        padding: 10px 20px;
+        border-bottom: 1px solid #555;
+    }
+
+    .logo {
+        border: 1px solid #777;
+        padding: 6px 12px;
+        margin-right: 20px;
+    }
+
+    .menu {
+        display: flex;
+        gap: 10px;
+        flex-grow: 1;
+    }
+
+    .menu span {
+        border: 1px solid #666;
+        padding: 6px 14px;
+        cursor: pointer;
+    }
+
+    .menu .active {
+        background-color: #1f4d7a;
+    }
+
+    .profile {
+        width: 32px;
+        height: 32px;
+        background-color: pink;
+        border-radius: 50%;
+    }
+
+    /* HEADER */
+    .header {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        border-bottom: 1px solid #555;
+    }
+
+    .header h2 {
+        margin: 0;
+        font-weight: normal;
+        flex-grow: 1;
+    }
+
+    .search input {
+        width: 260px;
+        padding: 8px;
+        background-color: #111;
+        border: 1px solid #666;
+        color: white;
+        border-radius: 6px;
+    }
+
+    /* CONTROLS */
+    .controls {
+        display: flex;
+        gap: 10px;
+        padding: 12px 20px;
+        border-bottom: 1px solid #555;
+    }
+
+    .btn {
+        border: 1px solid #777;
+        padding: 6px 14px;
+        cursor: pointer;
+    }
+
+    /* TABLE */
+    .table-wrapper {
+        padding: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid #555;
+        padding: 10px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    th {
+        font-weight: normal;
+        color: #ccc;
+    }
+
+    .date-row td {
+        text-align: left;
+        padding-left: 20px;
+        color: #ccc;
+    }
+  </style>
+</head><body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="logo">Company Logo</div>
+
+    <div class="menu">
+        <a href="Employees%20Dashboard.html"><span>Employees</span></a>
+        <span class="active">Attendance</span>
+        <a href="Time%20Off.html"><span>Time Off</span></a>
+    </div>
+
+    
+</div>
+
+
+<!-- HEADER -->
+<div class="header">
+    <h2>Attendance</h2>
+    <div class="search">
+        <input placeholder="Searchbar" type="text">
+    </div>
+</div>
+
+
+<!-- CONTROLS -->
+<div class="controls">
+    <div class="btn">&#8592;</div>
+    <div class="btn">&#8594;</div>
+    <div class="btn">Date v</div>
+    <div class="btn">Day</div>
+</div>
+
+
+<!-- TABLE -->
+<div class="table-wrapper">
+    <table>
+        <tbody><tr class="date-row">
+            <td colspan="6">22, October 2025</td>
+        </tr>
+        <tr>
+            <th>Emp</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Work Hours</th>
+            <th>Extra Hours</th>
+        </tr>
+        <tr>
+            <td>[Employee]</td>
+            <td>10:00</td>
+            <td>19:00</td>
+            <td>09:00</td>
+            <td>01:00</td>
+        </tr>
+        <tr>
+            <td>[Employee]</td>
+            <td>10:00</td>
+            <td>19:00</td>
+            <td>09:00</td>
+            <td>01:00</td>
+        </tr>
+    </tbody></table>
+</div>
+
+
+&gt;
+</body></html>

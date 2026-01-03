@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odoo HRMS - Complete Application</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .page {
+            display: none;
+            padding: 40px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        h2 {
+            color: #555;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        h3 {
+            color: #666;
+            margin: 20px 0 10px 0;
+            font-size: 1.2em;
+        }
+
+        /* Login Page */
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        button.success {
+            background: #28a745;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .header h1 {
+            color: white;
+            margin: 0;
+        }
+
+        /* Cards */
+        .card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Status badges */
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.working {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status.completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status.not-checked-in {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        /* Error messages */
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* Action buttons in tables */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-buttons button {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        /* Profile info */
+        .profile-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .profile-info p {
+            margin: 8px 0;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header (shown only when logged in) -->
+        <div class="header" id="header" style="display: none;">
+            <h1>Odoo HRMS</h1>
+            <button onclick="handleLogout()" class="danger">Logout</button>
+        </div>
+
+        <!-- Login Page -->
+        <div id="login-page" class="page active">
+            <div class="login-container">
+                <h2 style="text-align: center; margin-bottom: 30px;">Sign In</h2>
+                <div id="login-error" class="error" style="display: none;"></div>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" style="width: 100%;">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Employee Dashboard -->
+        <div id="employee-page" class="page">
+            <h1>Employee Dashboard</h1>
+            <div id="employee-loading" class="loading">Loading Profile...</div>
+            <div id="employee-content" style="display: none;">
+                <div class="profile-info" id="employee-profile"></div>
+                
+                <div class="card">
+                    <h3>Today's Attendance</h3>
+                    <div id="attendance-status"></div>
+                    <div id="attendance-actions" style="margin-top: 15px;"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Apply for Leave</h3>
+                    <form id="leave-form">
+                        <div class="form-group">
+                            <label for="leave-type">Leave Type</label>
+                            <select id="leave-type" required>
+                                <option value="paid">Paid</option>
+                                <option value="sick">Sick</option>
+                                <option value="unpaid">Unpaid</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="start-date">Start Date</label>
+                            <input type="date" id="start-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="end-date">End Date</label>
+                            <input type="date" id="end-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reason">Reason</label>
+                            <textarea id="reason" required></textarea>
+                        </div>
+                        <button type="submit">Submit Request</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-page" class="page">
+            <h1>Admin Dashboard</h1>
+            <div id="admin-loading" class="loading">Loading Dashboard...</div>
+            <div id="admin-content" style="display: none;">
+                <h3>⚠️ Pending Leave Requests</h3>
+                <div id="leave-requests-container"></div>
+
+                <hr style="margin: 30px 0; border: none; border-top: 2px solid #e0e0e0;">
+
+                <h3>👥 Employee List & Payroll</h3>
+                <div id="employees-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase Client
+        const SUPABASE_URL = 'https://ogaiiivueuibhyokiznw.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nYWlpaXZ1ZXVpYmh5b2tpem53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MTA2MDEsImV4cCI6MjA4Mjk4NjYwMX0.0oOesTzkdAO0fbDEToOIM_mc1z3TvUaWncgcvk10_yA';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Current user state
+        let currentUser = null;
+        let userRole = null;
+        let currentUserId = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            setupEventListeners();
+        });
+
+        // Check if user is already authenticated
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                currentUser = user;
+                currentUserId = user.id;
+                await loadUserRole();
+            } else {
+                showPage('login-page');
+            }
+        }
+
+        // Load user role
+        async function loadUserRole() {
+            if (!currentUserId) return;
+
+            const { data, error } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', currentUserId)
+                .single();
+
+            if (data) {
+                userRole = data.role;
+                if (userRole === 'admin') {
+                    showPage('admin-page');
+                    loadAdminDashboard();
+                } else {
+                    showPage('employee-page');
+                    loadEmployeeDashboard();
+                }
+                document.getElementById('header').style.display = 'flex';
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('leave-form').addEventListener('submit', handleLeaveSubmit);
+        }
+
+        // Handle login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            try {
+                const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (authError) throw authError;
+
+                currentUser = user;
+                currentUserId = user.id;
+
+                const { data: roleData, error: roleError } = await supabase
+                    .from('user_roles')
+                    .select('role')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (roleError) throw roleError;
+
+                userRole = roleData.role;
+                errorDiv.style.display = 'none';
+
+                if (userRole === 'admin') {
+                    showPage('admin-page');
+                    loadAdminDashboard();
+                } else {
+                    showPage('employee-page');
+                    loadEmployeeDashboard();
+                }
+                document.getElementById('header').style.display = 'flex';
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        // Handle logout
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            currentUser = null;
+            userRole = null;
+            currentUserId = null;
+            document.getElementById('header').style.display = 'none';
+            showPage('login-page');
+            document.getElementById('login-form').reset();
+        }
+
+        // Show specific page
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Load Employee Dashboard
+        async function loadEmployeeDashboard() {
+            const loadingDiv = document.getElementById('employee-loading');
+            const contentDiv = document.getElementById('employee-content');
+
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                const { data: profile } = await supabase
+                    .from('employees')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile) {
+                    document.getElementById('employee-profile').innerHTML = `
+                        <h3>Welcome, ${profile.full_name || 'Employee'}</h3>
+                        <p><strong>Email:</strong> ${profile.email}</p>
+                        <p><strong>Department:</strong> ${profile.department || 'N/A'}</p>
+                        <p><strong>Designation:</strong> ${profile.designation || 'N/A'}</p>
+                    `;
+                    currentUserId = profile.id;
+                    loadAttendanceCard(profile.id);
+                }
+
+                loadingDiv.style.display = 'none';
+                contentDiv.style.display = 'block';
+            } catch (error) {
+                loadingDiv.textContent = 'Error loading profile: ' + error.message;
+            }
+        }
+
+        // Load Attendance Card
+        async function loadAttendanceCard(userId) {
+            const today = new Date().toISOString().split('T')[0];
+            const statusDiv = document.getElementById('attendance-status');
+            const actionsDiv = document.getElementById('attendance-actions');
+
+            const { data } = await supabase
+                .from('attendance')
+                .select('*')
+                .eq('user_id', userId)
+                .eq('date', today)
+                .single();
+
+            let status = 'NOT_CHECKED_IN';
+            if (data) {
+                if (data.check_in && !data.check_out) {
+                    status = 'WORKING';
+                } else if (data.check_in && data.check_out) {
+                    status = 'COMPLETED';
+                }
+            }
+
+            statusDiv.innerHTML = `<p>Status: <span class="status ${status.toLowerCase().replace('_', '-')}">${status.replace('_', ' ')}</span></p>`;
+
+            if (status !== 'COMPLETED') {
+                actionsDiv.innerHTML = `
+                    <button onclick="handleAttendancePunch('${userId}')" class="${status === 'NOT_CHECKED_IN' ? '' : 'secondary'}">
+                        ${status === 'NOT_CHECKED_IN' ? 'Check In' : 'Check Out'}
+                    </button>
+                `;
+            } else {
+                actionsDiv.innerHTML = '<p style="color: #666;">Attendance completed for today.</p>';
+            }
+        }
+
+        // Handle attendance punch
+        async function handleAttendancePunch(userId) {
+            const now = new Date().toISOString();
+            const today = new Date().toISOString().split('T')[0];
+
+            const { data: existing } = await supabase
+                .from('attendance')
+                .select('*')
+                .eq('user_id', userId)
+                .eq('date', today)
+                .single();
+
+            if (!existing) {
+                // Check in
+                const { error } = await supabase.from('attendance').insert({
+                    user_id: userId,
+                    date: today,
+                    check_in: now,
+                    status: 'present'
+                });
+                if (!error) {
+                    alert('Checked in successfully!');
+                    loadAttendanceCard(userId);
+                }
+            } else if (existing.check_in && !existing.check_out) {
+                // Check out
+                const { error } = await supabase.from('attendance')
+                    .update({ check_out: now })
+                    .eq('user_id', userId)
+                    .eq('date', today);
+                if (!error) {
+                    alert('Checked out successfully!');
+                    loadAttendanceCard(userId);
+                }
+            }
+        }
+
+        // Handle leave form submit
+        async function handleLeaveSubmit(e) {
+            e.preventDefault();
+            if (!currentUserId) return;
+
+            const leaveData = {
+                user_id: currentUserId,
+                type: document.getElementById('leave-type').value,
+                start_date: document.getElementById('start-date').value,
+                end_date: document.getElementById('end-date').value,
+                reason: document.getElementById('reason').value
+            };
+
+            const { error } = await supabase.from('leave_requests').insert(leaveData);
+
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                alert('Leave Request Submitted!');
+                document.getElementById('leave-form').reset();
+            }
+        }
+
+        // Load Admin Dashboard
+        async function loadAdminDashboard() {
+            const loadingDiv = document.getElementById('admin-loading');
+            const contentDiv = document.getElementById('admin-content');
+
+            try {
+                // Fetch employees
+                const { data: employees } = await supabase
+                    .from('employees')
+                    .select('*');
+
+                // Fetch pending leave requests
+                const { data: leaveRequests } = await supabase
+                    .from('leave_requests')
+                    .select(`
+                        *,
+                        employees:user_id (full_name, email)
+                    `)
+                    .eq('status', 'pending');
+
+                // Render leave requests
+                const leaveContainer = document.getElementById('leave-requests-container');
+                if (!leaveRequests || leaveRequests.length === 0) {
+                    leaveContainer.innerHTML = '<p>No pending leave requests.</p>';
+                } else {
+                    let tableHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Type</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Reason</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    leaveRequests.forEach(req => {
+                        const empName = req.employees?.full_name || req.employees?.email || 'Unknown';
+                        tableHTML += `
+                            <tr>
+                                <td>${empName}</td>
+                                <td>${req.type}</td>
+                                <td>${new Date(req.start_date).toLocaleDateString()}</td>
+                                <td>${new Date(req.end_date).toLocaleDateString()}</td>
+                                <td>${req.reason || 'N/A'}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button onclick="handleLeaveDecision('${req.id}', 'approved')" class="success">Approve</button>
+                                        <button onclick="handleLeaveDecision('${req.id}', 'rejected')" class="danger">Reject</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tableHTML += '</tbody></table>';
+                    leaveContainer.innerHTML = tableHTML;
+                }
+
+                // Render employees
+                const empContainer = document.getElementById('employees-container');
+                if (!employees || employees.length === 0) {
+                    empContainer.innerHTML = '<p>No employees found.</p>';
+                } else {
+                    let tableHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Department</th>
+                                    <th>Designation</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    employees.forEach(emp => {
+                        tableHTML += `
+                            <tr>
+                                <td>${emp.full_name || 'N/A'}</td>
+                                <td>${emp.email}</td>
+                                <td>${emp.department || 'Unassigned'}</td>
+                                <td>${emp.designation || 'N/A'}</td>
+                                <td>${new Date(emp.joined_at).toLocaleDateString()}</td>
+                                <td>
+                                    <button onclick="updateSalary('${emp.id}')" class="secondary">Update Salary</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tableHTML += '</tbody></table>';
+                    empContainer.innerHTML = tableHTML;
+                }
+
+                loadingDiv.style.display = 'none';
+                contentDiv.style.display = 'block';
+            } catch (error) {
+                loadingDiv.textContent = 'Error loading dashboard: ' + error.message;
+            }
+        }
+
+        // Handle leave decision (approve/reject)
+        async function handleLeaveDecision(requestId, decision) {
+            const { error } = await supabase
+                .from('leave_requests')
+                .update({ status: decision })
+                .eq('id', requestId);
+
+            if (!error) {
+                alert(`Request ${decision}!`);
+                loadAdminDashboard();
+            } else {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Update salary
+        async function updateSalary(employeeId) {
+            const newSalary = prompt('Enter new salary:');
+            if (newSalary && !isNaN(newSalary)) {
+                const { error } = await supabase
+                    .from('payroll')
+                    .insert({
+                        user_id: employeeId,
+                        basic_salary: parseFloat(newSalary),
+                        allowances: 0,
+                        deductions: 0,
+                        net_salary: parseFloat(newSalary),
+                        month: new Date().toISOString().slice(0, 7)
+                    });
+
+                if (!error) {
+                    alert('Salary Updated!');
+                } else {
+                    alert('Error: ' + error.message);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+
